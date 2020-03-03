@@ -1,47 +1,65 @@
 package com.faustogomez.news
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.faustogomez.news.network.Article
-import com.faustogomez.news.network.ArticleResponse
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.faustogomez.news.network.NewsAPI
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.article_item.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Query
 
 class MainActivity : AppCompatActivity() {
 
-    private val moshi = Moshi.Builder()
-        .add(KotlinJsonAdapterFactory())
-        .build()
-
-    private val retrofit: Retrofit? = Retrofit.Builder()
-        .addConverterFactory(MoshiConverterFactory.create(moshi))
-        .baseUrl("https://api.nytimes.com/svc/")
-        .build()
-
-    private var api: API = retrofit!!.create<API>(API::class.java)
+    private val api= NewsAPI()
+    private var articles: List<Article> = listOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        article_list.layoutManager = GridLayoutManager(this, 2)
 
-        getPopularArticles()
+        loadPopularArticles()
     }
 
-    private fun getPopularArticles() = GlobalScope.launch (Dispatchers.Main){
-        val firstResult: Article = api.getPopularArticlesAsync(BuildConfig.API_KEY).results.first()
-        introText.text = firstResult.title
+    private fun loadPopularArticles() = GlobalScope.launch(Dispatchers.Main){
+        val popularArticles = api.getPopularArticles()
+        if(popularArticles != null){
+            articles = popularArticles
+            update()
+        }
+    }
+
+    private fun update(){
+        article_list.adapter = ArticleAdapter(articles, this)
     }
 }
 
-interface API{
-    @GET("/mostpopular/v2/viewed/1.json")
-    suspend fun getPopularArticlesAsync(@Query("api-key") apiKey:String): ArticleResponse
+private class ArticleAdapter(private val articles: List<Article>, val context: Context): RecyclerView.Adapter<ArticleViewHolder>(){
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleViewHolder {
+        return ArticleViewHolder((LayoutInflater.from(context).inflate(R.layout.article_item, parent, false)))
+    }
+
+    override fun getItemCount(): Int {
+        return articles.count()
+    }
+
+    override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
+        val article = articles[position]
+
+        holder.itemView.item_title.text = article.title
+        article.media.firstOrNull()?.mediaMedata?.firstOrNull()?.url.let {
+            holder.itemView.item_image
+        }
+    }
+
 }
+
+private class ArticleViewHolder(view: View): RecyclerView.ViewHolder(view)
