@@ -3,6 +3,7 @@ package com.faustogomez.news
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         article_list.layoutManager = GridLayoutManager(this, 2)
 
@@ -44,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 
 private class ArticleAdapter(private val articles: List<Article>, val context: Context, val articleSelected: (Article) -> Unit): RecyclerView.Adapter<ArticleViewHolder>(){
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArticleViewHolder {
-        return ArticleViewHolder((LayoutInflater.from(context).inflate(R.layout.article_item, parent, false)))
+        return ArticleViewHolder(LayoutInflater.from(context).inflate(R.layout.article_item, parent, false))
     }
 
     override fun getItemCount(): Int {
@@ -54,13 +56,13 @@ private class ArticleAdapter(private val articles: List<Article>, val context: C
     override fun onBindViewHolder(holder: ArticleViewHolder, position: Int) {
         val article = articles[position]
 
+        holder.itemView.setOnClickListener {
+            articleSelected(article)
+        }
+
         holder.itemView.item_title.text = article.title
         article.media.firstOrNull()?.mediaMedata?.firstOrNull()?.url.let {
             Glide.with(context).load(it).into(holder.itemView.item_image)
-        }
-
-        holder.itemView.setOnClickListener {
-            articleSelected(article)
         }
     }
 }

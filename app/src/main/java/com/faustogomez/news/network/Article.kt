@@ -18,7 +18,7 @@ data class ArticleResponse(
 @Parcelize
 data class Media(
     val type: String,
-    @Json(name = "media-medata") val mediaMedata: List<MediaMetadata>
+    @Json(name = "media-metadata") val mediaMedata: List<MediaMetadata>
 ):Parcelable
 
 @Parcelize

@@ -22,6 +22,7 @@ class NewsAPI(){
     private var api: API = retrofit!!.create<API>(API::class.java)
 
     suspend fun getPopularArticles(): List<Article>?{
+
         return try{
             val response = api.getPopularArticlesAsync(BuildConfig.API_KEY)
             response.results

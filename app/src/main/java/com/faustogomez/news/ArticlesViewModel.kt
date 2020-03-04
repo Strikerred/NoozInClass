@@ -1,5 +1,6 @@
 package com.faustogomez.news
 
+import android.util.Log
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,10 +12,13 @@ import kotlinx.coroutines.launch
 
 class ArticlesViewModel (): ViewModel(), LifecycleObserver{
     private val api= NewsAPI()
+
     var articles = MutableLiveData<List<Article>>()
 
     fun loadPopularArticles() = GlobalScope.launch(Dispatchers.Main){
+
         val popularArticles = api.getPopularArticles()
+
         if(popularArticles != null){
             articles.value = popularArticles
         }
